@@ -1,0 +1,831 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+:root {
+  color-scheme: dark;
+  font-family: 'Press Start 2P', ui-monospace, monospace;
+  color: #fff;
+  background: #0a0a12;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  touch-action: none;
+}
+
+html, body, #root {
+  width: 100%;
+  height: 100%;
+  width: 100vw;
+  height: 100vh;
+  width: 100dvw;
+  height: 100dvh;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background: #0a0a12;
+}
+
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  background: #0a0a12;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+
+button {
+  width: min(100%, 360px);
+  padding: 14px 20px;
+  border: 3px solid #4ecdc4;
+  border-radius: 12px;
+  background: #1a1a28;
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.65rem;
+  line-height: 1.6;
+  transition: all 0.2s ease;
+}
+
+button:hover {
+  box-shadow: 0 0 22px rgb(78 205 196 / 50%);
+  transform: translateY(-2px);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+/* ============================================================
+   SHELL E CANVAS DO JOGO (TELA CHEIA PC E CELULAR - 100% SCREEN)
+   ============================================================ */
+
+.game-shell {
+  position: fixed;
+  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  width: 100dvw;
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border-radius: 0;
+  background: #0a0a12;
+}
+
+.game-canvas {
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  width: 100dvw;
+  height: 100dvh;
+  border-radius: 0;
+  background: #0a0a12;
+  image-rendering: pixelated;
+}
+
+/* Overlay em Tela Completa (Menu e Game Over) */
+.overlay {
+  position: fixed;
+  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  width: 100dvw;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  border-radius: 0;
+  background: rgba(10, 10, 18, 0.95);
+  text-align: center;
+  overflow-y: auto;
+  z-index: 25;
+}
+
+.overlay h1 {
+  font-size: clamp(1rem, 3.8vw, 1.8rem);
+  line-height: 1.5;
+  background: linear-gradient(90deg, #ff6b6b, #4ecdc4);
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 6px;
+}
+
+.overlay p {
+  max-width: 680px;
+  color: #9aa;
+  font-size: clamp(0.55rem, 1.6vw, 0.75rem);
+  line-height: 1.8;
+  white-space: pre-line;
+}
+
+/* Botões do Topo: Tela Cheia e Menu */
+.fullscreen-toggle-btn {
+  position: fixed;
+  top: 14px;
+  right: 14px;
+  z-index: 70;
+  width: auto;
+  padding: 8px 14px;
+  font-size: 0.55rem;
+  font-family: 'Press Start 2P', monospace;
+  background: rgba(10, 15, 26, 0.88);
+  border: 2px solid #4ecdc4;
+  color: #4ecdc4;
+  border-radius: 8px;
+  box-shadow: 0 0 12px rgba(78, 205, 196, 0.35);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.fullscreen-toggle-btn:hover {
+  background: #4ecdc4;
+  color: #0a0a12;
+  box-shadow: 0 0 20px rgba(78, 205, 196, 0.8);
+  transform: scale(1.05);
+}
+
+.back-to-menu-btn {
+  position: fixed;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 70;
+  width: auto;
+  padding: 8px 14px;
+  font-size: 0.55rem;
+  font-family: 'Press Start 2P', monospace;
+  background: rgba(10, 15, 26, 0.85);
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  color: #eee;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.back-to-menu-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: #fff;
+  color: #fff;
+}
+
+/* ============================================================
+   TELA DE GAME OVER DRAMÁTICA (CARIMBO + DOSSIÊ + FRASE SACANA)
+   ============================================================ */
+
+.game-over-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 640px;
+  gap: 12px;
+  animation: stampShake 0.4s ease-out 0.38s both;
+  cursor: default;
+  margin: auto;
+}
+
+/* Selo Carimbo Dramático */
+.stamp-wrapper {
+  perspective: 800px;
+  margin-bottom: 4px;
+}
+
+.stamp-seal {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 18px;
+  border: 4px solid #e63946;
+  outline: 2px dashed #e63946;
+  outline-offset: -7px;
+  background: rgba(230, 57, 70, 0.16);
+  color: #ff4d5a;
+  border-radius: 6px;
+  text-align: center;
+  box-shadow: 0 0 25px rgba(230, 57, 70, 0.45), inset 0 0 15px rgba(230, 57, 70, 0.25);
+  animation: stampSlam 0.45s cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
+  transform-origin: center center;
+}
+
+.stamp-coercitiva {
+  border-color: #e63946;
+  outline-color: #e63946;
+  color: #ff5260;
+}
+
+.stamp-flagrante {
+  border-color: #ff2a42;
+  outline-color: #ff2a42;
+  color: #ff2a42;
+}
+
+.stamp-sub-header {
+  font-size: 0.45rem;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+  opacity: 0.85;
+}
+
+.stamp-title {
+  font-size: clamp(0.9rem, 2.8vw, 1.35rem);
+  font-weight: bold;
+  letter-spacing: 2px;
+  text-shadow: 0 0 12px rgba(230, 57, 70, 0.8);
+  margin: 2px 0 6px;
+}
+
+.stamp-sub-footer {
+  font-size: 0.42rem;
+  letter-spacing: 0.8px;
+  opacity: 0.75;
+}
+
+/* Dossiê de Apreensão */
+.dossier-card {
+  width: 100%;
+  background: rgba(18, 24, 38, 0.85);
+  border: 2px solid #2d3748;
+  border-radius: 10px;
+  padding: 10px 14px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+  animation: dossierSlideUp 0.4s ease-out 0.65s both;
+}
+
+.dossier-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.55rem;
+  color: #81e6d9;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.15);
+  padding-bottom: 6px;
+  margin-bottom: 8px;
+}
+
+.dossier-agent {
+  color: #ff6b6b;
+  font-weight: bold;
+}
+
+.dossier-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 8px;
+}
+
+.dossier-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  background: rgba(10, 15, 24, 0.7);
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.dossier-label {
+  font-size: 0.42rem;
+  color: #718096;
+  letter-spacing: 0.5px;
+}
+
+.dossier-value {
+  font-size: 0.62rem;
+  color: #edf2f7;
+  font-weight: bold;
+}
+
+.dossier-value.money {
+  color: #00ff88;
+  text-shadow: 0 0 8px rgba(0, 255, 136, 0.4);
+}
+
+.dossier-value.highlight {
+  color: #ffd166;
+}
+
+/* Veredito / Frase Sacana */
+.verdict-banner {
+  width: 100%;
+  background: linear-gradient(90deg, rgba(255, 209, 102, 0.12), rgba(0, 0, 0, 0.45));
+  border-left: 4px solid #ffd166;
+  border-radius: 4px 8px 8px 4px;
+  padding: 8px 12px;
+  text-align: left;
+  animation: verdictPop 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) 1.1s both;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+
+.verdict-tag {
+  font-size: 0.45rem;
+  color: #ffd166;
+  margin-bottom: 4px;
+  letter-spacing: 0.5px;
+}
+
+.verdict-text {
+  font-size: clamp(0.55rem, 1.7vw, 0.75rem);
+  color: #fff;
+  line-height: 1.6;
+  font-style: italic;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+/* Botões */
+.game-over-actions {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  justify-content: center;
+  margin-top: 4px;
+  animation: actionsFadeIn 0.35s ease-out 1.4s both;
+}
+
+.btn-retry {
+  border-color: #ff6b6b;
+  background: #2a151b;
+}
+
+.btn-retry:hover {
+  box-shadow: 0 0 22px rgba(255, 107, 107, 0.6);
+  background: #3d1b25;
+}
+
+.btn-menu {
+  border-color: #4ecdc4;
+  background: #142828;
+}
+
+.btn-menu:hover {
+  box-shadow: 0 0 22px rgba(78, 205, 196, 0.6);
+  background: #1d3d3d;
+}
+
+.skip-hint {
+  font-size: 0.4rem;
+  color: #555;
+  margin-top: 2px;
+  cursor: pointer;
+}
+
+/* Modo Skipped: todas as animações instantâneas */
+.game-over-container.is-skipped,
+.game-over-container.is-skipped .stamp-seal,
+.game-over-container.is-skipped .dossier-card,
+.game-over-container.is-skipped .verdict-banner,
+.game-over-container.is-skipped .game-over-actions {
+  animation-duration: 0.001s !important;
+  animation-delay: 0s !important;
+  transform: none !important;
+  opacity: 1 !important;
+}
+
+.game-over-container.is-skipped .stamp-seal {
+  transform: rotate(-6deg) !important;
+}
+
+.game-over-container.is-skipped .skip-hint {
+  display: none;
+}
+
+/* Keyframes */
+@keyframes stampSlam {
+  0% {
+    transform: scale(4.2) rotate(-26deg);
+    opacity: 0;
+    filter: blur(10px);
+  }
+  60% {
+    transform: scale(0.92) rotate(-5deg);
+    opacity: 1;
+    filter: blur(0px);
+  }
+  80% {
+    transform: scale(1.08) rotate(-7.5deg);
+  }
+  100% {
+    transform: scale(1) rotate(-6.5deg);
+    opacity: 1;
+  }
+}
+
+@keyframes stampShake {
+  0%, 100% { transform: translateY(0); }
+  25% { transform: translate(-3px, 3px); }
+  50% { transform: translate(3px, -2px); }
+  75% { transform: translate(-2px, 2px); }
+}
+
+@keyframes dossierSlideUp {
+  from {
+    transform: translateY(18px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes verdictPop {
+  0% {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes actionsFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================================
+   OS ALIENADOS (APARECENDO FORA DA TELA DO JOGO)
+   ============================================================ */
+
+.alienado-container {
+  position: fixed;
+  z-index: 60;
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.75));
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.alienado-container:hover {
+  transform: scale(1.06);
+}
+
+.alienado-container.is-clicked {
+  animation: alienadoCheer 0.4s ease-in-out;
+}
+
+/* Posições relativas à janela / fora do jogo */
+.alienado-left {
+  left: 20px;
+  top: 45%;
+  flex-direction: row;
+}
+
+.alienado-left.is-entering {
+  animation: alienadoSlideInLeft 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+}
+
+.alienado-left.is-leaving {
+  animation: alienadoSlideOutLeft 0.45s ease-in forwards;
+}
+
+.alienado-right {
+  right: 20px;
+  top: 45%;
+  flex-direction: row-reverse;
+}
+
+.alienado-right.is-entering {
+  animation: alienadoSlideInRight 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+}
+
+.alienado-right.is-leaving {
+  animation: alienadoSlideOutRight 0.45s ease-in forwards;
+}
+
+.alienado-bottom-left {
+  left: 30px;
+  bottom: 20px;
+  flex-direction: column-reverse;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.alienado-bottom-left.is-entering {
+  animation: alienadoPopUpBottom 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+}
+
+.alienado-bottom-left.is-leaving {
+  animation: alienadoPopDownBottom 0.45s ease-in forwards;
+}
+
+.alienado-bottom-right {
+  right: 30px;
+  bottom: 20px;
+  flex-direction: column-reverse;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.alienado-bottom-right.is-entering {
+  animation: alienadoPopUpBottom 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+}
+
+.alienado-bottom-right.is-leaving {
+  animation: alienadoPopDownBottom 0.45s ease-in forwards;
+}
+
+/* Avatar do Alienado */
+.alienado-avatar-wrap {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  flex-shrink: 0;
+  animation: alienadoWobble 2s ease-in-out infinite;
+}
+
+.alienado-avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 4px solid #ff2a42;
+  box-shadow: 0 0 25px rgba(255, 42, 66, 0.7), inset 0 0 15px rgba(255, 0, 0, 0.4);
+  background: #1c090e;
+  object-fit: cover;
+  display: block;
+}
+
+.alienado-flag-badge {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 32px;
+  height: 32px;
+  background: #e63946;
+  color: #fff;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-weight: 900;
+  font-size: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+/* Balão de Diálogo Cômico */
+.alienado-speech-bubble {
+  position: relative;
+  background: #fff;
+  color: #111;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 3px solid #111;
+  max-width: 240px;
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.9);
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  margin: 0 12px;
+}
+
+.alienado-bubble-tag {
+  font-size: 0.6rem;
+  font-weight: 900;
+  color: #e63946;
+  letter-spacing: 0.6px;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.alienado-bubble-text {
+  font-size: 0.8rem;
+  font-weight: 800;
+  line-height: 1.35;
+  color: #111;
+}
+
+.alienado-bonus-floater {
+  position: absolute;
+  top: -24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #ffd166;
+  color: #111;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.6rem;
+  font-weight: bold;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 2px solid #000;
+  white-space: nowrap;
+  animation: floatBonus 0.8s ease-out forwards;
+  pointer-events: none;
+}
+
+/* Adaptação dos Alienados em telas menores / celulares */
+@media (max-width: 600px) {
+  .alienado-avatar-wrap {
+    width: 68px;
+    height: 68px;
+  }
+  .alienado-speech-bubble {
+    max-width: 170px;
+    padding: 6px 10px;
+    margin: 0 6px;
+  }
+  .alienado-bubble-text {
+    font-size: 0.68rem;
+  }
+}
+
+/* Keyframes dos Alienados */
+@keyframes alienadoWobble {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-5px) rotate(-4deg);
+  }
+  75% {
+    transform: translateY(3px) rotate(4deg);
+  }
+}
+
+@keyframes alienadoCheer {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.22) rotate(-8deg); }
+  100% { transform: scale(1); }
+}
+
+@keyframes alienadoSlideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-150px) rotate(-15deg);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) rotate(0deg);
+  }
+}
+
+@keyframes alienadoSlideOutLeft {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-160px);
+  }
+}
+
+@keyframes alienadoSlideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(150px) rotate(15deg);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) rotate(0deg);
+  }
+}
+
+@keyframes alienadoSlideOutRight {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(160px);
+  }
+}
+
+@keyframes alienadoPopUpBottom {
+  from {
+    opacity: 0;
+    transform: translateY(140px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes alienadoPopDownBottom {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(140px);
+  }
+}
+
+@keyframes floatBonus {
+  0% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-28px);
+  }
+}
+
+/* ============================================================
+   INTRO DE VÍDEO (LULETE) - TELA TODA (FULLSCREEN THEATER)
+   ============================================================ */
+
+.intro-container {
+  position: fixed;
+  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  width: 100dvw;
+  height: 100dvh;
+  background: #000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 99999;
+  border-radius: 0;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.intro-video {
+  width: 100vw;
+  height: 100vh;
+  width: 100dvw;
+  height: 100dvh;
+  object-fit: cover;
+  background: #000;
+}
+
+.intro-controls {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  z-index: 100000;
+}
+
+.skip-intro-btn {
+  width: auto;
+  padding: 12px 22px;
+  font-size: 0.72rem;
+  font-family: 'Press Start 2P', monospace;
+  background: rgba(10, 10, 22, 0.9);
+  border: 2px solid #ffd166;
+  color: #ffd166;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 0 20px rgba(255, 209, 102, 0.5);
+  transition: all 0.2s ease;
+}
+
+.skip-intro-btn:hover {
+  background: #ffd166;
+  color: #111;
+  box-shadow: 0 0 30px rgba(255, 209, 102, 0.9);
+  transform: scale(1.05);
+}
+
+.skip-intro-btn:active {
+  transform: scale(0.98);
+}
+
+.skip-intro-hint {
+  font-size: 0.48rem;
+  color: rgba(255, 255, 255, 0.8);
+  font-family: 'Press Start 2P', monospace;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.9);
+}
