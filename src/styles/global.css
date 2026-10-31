@@ -187,6 +187,67 @@ button:active {
   color: #fff;
 }
 
+.site-footer {
+  position: fixed;
+  right: 12px;
+  bottom: 8px;
+  z-index: 80;
+  color: rgba(255, 255, 255, 0.62);
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  pointer-events: none;
+  text-shadow: 0 1px 3px #000;
+}
+
+.player-name-display {
+  position: fixed;
+  top: 14px;
+  left: 700px;
+  z-index: 70;
+  max-width: calc(100vw - 180px);
+  overflow: hidden;
+  padding: 8px 12px;
+  border: 2px solid #ffd166;
+  border-radius: 8px;
+  background: rgba(10, 15, 26, 0.88);
+  color: #ffd166;
+  font-size: 0.55rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.player-name-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: min(100%, 420px);
+}
+
+.player-name-form p {
+  color: #9aa;
+  font-size: 0.65rem;
+  line-height: 1.8;
+}
+
+.player-name-form input,
+.score-player-name {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #4ecdc4;
+  border-radius: 8px;
+  background: #101622;
+  color: #fff;
+  font: inherit;
+  font-size: 0.58rem;
+  text-align: center;
+}
+
+.player-name-form input::placeholder {
+  color: #718096;
+}
+
 /* ============================================================
    TELA DE GAME OVER DRAMÁTICA (CARIMBO + DOSSIÊ + FRASE SACANA)
    ============================================================ */
@@ -604,6 +665,25 @@ button:active {
   box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.9);
   font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
   margin: 0 12px;
+}
+
+.alienado-quote-overlay {
+  position: fixed;
+  z-index: 65;
+  transform: translate(-50%, -100%);
+  pointer-events: none;
+  animation: verdictPop 0.3s ease-out both;
+}
+
+.alienado-quote-overlay .alienado-speech-bubble {
+  margin: 0;
+  max-width: min(420px, 85vw);
+  text-align: center;
+}
+
+.alienado-quote-overlay .alienado-bubble-tag {
+  justify-content: center;
+  color: #d6a100;
 }
 
 .alienado-bubble-tag {

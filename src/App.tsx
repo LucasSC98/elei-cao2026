@@ -3,10 +3,13 @@ import { GameMenu } from './components/GameMenu';
 import { GameOver } from './components/GameOver';
 import { Overlay } from './components/Overlay';
 import { AlienadosOverlay } from './components/AlienadosOverlay';
+import { AlienadosFlavieteOverlay } from './components/AlienadosFlavieteOverlay';
 import { IntroVideo } from './components/IntroVideo';
+import flavieteIntroUrl from './assets/flaviete-intro.mp4';
 import { createLarapioGame } from './games/larapioGame';
 import { createRunnerGame } from './games/runnerGame';
 import { useKeyboard } from './hooks/useKeyboard';
+import { saveScore } from './services/scoreService';
 import type { GameId, GameModule, GameResult } from './types';
 
 export default function App() {
@@ -15,8 +18,15 @@ export default function App() {
   const keys = useKeyboard();
   const [game, setGame] = useState<GameId | null>(null);
   const [result, setResult] = useState<GameResult | null>(null);
-  const [showingIntro, setShowingIntro] = useState(false);
+  const [showingIntro, setShowingIntro] = useState<GameId | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [playerName, setPlayerName] = useState('');
+  const [nameInput, setNameInput] = useState('');
+  const [runnerAlienadoQuote, setRunnerAlienadoQuote] = useState<{
+    text: string;
+    x: number;
+    y: number;
+  } | null>(null);
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
@@ -36,7 +46,7 @@ export default function App() {
 
   const openMenu = () => {
     gameRef.current?.stop();
-    setShowingIntro(false);
+    setShowingIntro(null);
     setGame(null);
     setResult(null);
   };
@@ -45,25 +55,29 @@ export default function App() {
     gameRef.current?.destroy();
     setGame(selectedGame);
     setResult(null);
+    setRunnerAlienadoQuote(null);
   };
 
   const handleSelectGame = (selectedGame: GameId) => {
-    if (selectedGame === 'larapio') {
-      // Abre o vídeo de introdução em tela cheia ao iniciar Lulete pelo menu
-      setShowingIntro(true);
-    } else {
-      startGame('runner');
-    }
+    setShowingIntro(selectedGame);
   };
 
   const finishIntro = () => {
-    setShowingIntro(false);
-    startGame('larapio');
+    const selectedGame = showingIntro;
+    setShowingIntro(null);
+    if (selectedGame) startGame(selectedGame);
   };
 
   const retryGame = () => {
     setResult(null);
     gameRef.current?.start();
+  };
+
+  const confirmPlayerName = () => {
+    const normalizedName = nameInput.trim();
+    if (!normalizedName) return;
+    setPlayerName(normalizedName);
+    localStorage.setItem('jogador', normalizedName);
   };
 
   const handleAlienadoDonation = useCallback(
@@ -73,23 +87,40 @@ export default function App() {
     [],
   );
 
+  const handleRunnerAlienadoQuote = useCallback((quote: string, x: number, y: number) => {
+    setRunnerAlienadoQuote({ text: quote, x, y });
+  }, []);
+
   useEffect(() => {
     if (!game || !canvasRef.current) return;
-    const onEnd = (gameResult: GameResult) => setResult(gameResult);
+    const onEnd = (gameResult: GameResult) => {
+      setResult(gameResult);
+      const score = gameResult.stats?.score;
+      if (score !== undefined) {
+        void saveScore(playerName, game, score).catch((error: unknown) => {
+          console.error('Não foi possível salvar a pontuação no Supabase.', error);
+        });
+      }
+    };
     gameRef.current = game === 'runner'
-      ? createRunnerGame(canvasRef.current, keys.current, onEnd)
+      ? createRunnerGame(canvasRef.current, keys.current, onEnd, handleRunnerAlienadoQuote)
       : createLarapioGame(canvasRef.current, keys.current, onEnd);
     gameRef.current.start();
     return () => {
       gameRef.current?.destroy();
       gameRef.current = null;
     };
-  }, [game, keys]);
+  }, [game, keys, handleRunnerAlienadoQuote]);
 
   return (
     <>
       {/* Intro de vídeo do Lulete em tela cheia (ocupa 100% da janela) */}
-      {showingIntro && <IntroVideo onFinish={finishIntro} />}
+      {showingIntro && (
+        <IntroVideo
+          onFinish={finishIntro}
+          videoSrc={showingIntro === 'runner' ? flavieteIntroUrl : undefined}
+        />
+      )}
 
       {/* Botão de Alternar Tela Cheia (F11 / Nativa) */}
       {!showingIntro && (
@@ -100,6 +131,10 @@ export default function App() {
         >
           {isFullscreen ? '🗗 SAIR' : '⛶ TELA CHEIA'}
         </button>
+      )}
+
+      {playerName && !showingIntro && (
+        <div className="player-name-display">USUÁRIO: {playerName}</div>
       )}
 
       {/* Botão para voltar ao Menu durante a jogatina */}
@@ -113,20 +148,53 @@ export default function App() {
       <main className="game-shell">
         <canvas ref={canvasRef} className="game-canvas" />
 
-        {(!game || result) && !showingIntro && (
+        {(!game || result) && !showingIntro && playerName && (
           <Overlay>
             {result ? (
-              <GameOver result={result} onRetry={retryGame} onMenu={openMenu} />
+              <GameOver
+                result={result}
+                onRetry={retryGame}
+                onMenu={openMenu}
+              />
             ) : (
               <GameMenu onSelect={handleSelectGame} />
             )}
           </Overlay>
         )}
+
+        {!playerName && !showingIntro && (
+          <Overlay>
+            <div className="player-name-form">
+              <h1>IDENTIFIQUE-SE</h1>
+              <p>Digite seu nome para começar a jogar.</p>
+              <input
+                autoFocus
+                aria-label="Seu nome"
+                maxLength={40}
+                onChange={(event) => setNameInput(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter') confirmPlayerName();
+                }}
+                placeholder="SEU NOME"
+                value={nameInput}
+              />
+              <button onClick={confirmPlayerName}>ENTRAR</button>
+            </div>
+          </Overlay>
+        )}
       </main>
+
+      <footer className="site-footer">Criado por LucasSC98</footer>
 
       {/* Os Alienados surgindo fora da tela do jogo */}
       {game === 'larapio' && !result && !showingIntro && (
         <AlienadosOverlay onDonation={handleAlienadoDonation} />
+      )}
+      {game === 'runner' && !result && !showingIntro && (
+        <AlienadosFlavieteOverlay
+          quote={runnerAlienadoQuote}
+          onExpire={() => setRunnerAlienadoQuote(null)}
+        />
       )}
     </>
   );

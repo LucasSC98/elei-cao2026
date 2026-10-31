@@ -1,11 +1,14 @@
 import { useEffect, useRef } from 'react';
 import videoSrc from '../assets/lulete-video.mp4';
 
+const defaultVideoSrc = videoSrc;
+
 type IntroVideoProps = {
   onFinish: () => void;
+  videoSrc?: string;
 };
 
-export function IntroVideo({ onFinish }: IntroVideoProps) {
+export function IntroVideo({ onFinish, videoSrc = defaultVideoSrc }: IntroVideoProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -48,4 +51,3 @@ export function IntroVideo({ onFinish }: IntroVideoProps) {
     </div>
   );
 }
-
