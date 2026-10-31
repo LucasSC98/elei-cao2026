@@ -102,11 +102,14 @@ export function createRunnerGame(
   let effects: Array<{ x: number; y: number; text: string; color: string; time: number }> = [];
 
   const ground = () => canvas.height - Math.max(65, Math.floor(canvas.height * 0.12));
+  const isCompactScreen = () => canvas.width < 700;
 
   const resize = () => {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-    const height = Math.round(Math.min(canvas.height * 0.22, 130));
+    const height = isCompactScreen()
+      ? Math.round(Math.min(canvas.height * 0.14, 88))
+      : Math.round(Math.min(canvas.height * 0.22, 130));
     player.height = height;
     player.width = Math.round(height * FW / FH);
     player.x = Math.max(80, Math.floor(canvas.width * 0.22));
@@ -174,7 +177,9 @@ export function createRunnerGame(
       player.grounded = true;
     }
     if (keys.has('Space') || keys.has('ArrowUp') || keys.has('KeyW')) jump();
-    if (frame % 240 === 0 && speed < 12) speed += .35;
+    if (frame % (isCompactScreen() ? 360 : 240) === 0 && speed < (isCompactScreen() ? 9 : 12)) {
+      speed += isCompactScreen() ? .18 : .35;
+    }
     distance += speed;
     score = Math.floor(distance / 10);
     pressure += .0002 + stage * .00002;
@@ -187,7 +192,7 @@ export function createRunnerGame(
       wizard.active = true;
       wizard.time = 0;
       wizard.x = canvas.width + 100;
-      effects.push({ x: canvas.width * .25, y: canvas.height * .25, text: 'O BRUXO CHEGOU!', color: '#7CFC9A', time: 70 });
+      effects.push({ x: canvas.width * .25, y: canvas.height * .25, text: 'Alexandre de Moraes!', color: '#19c942', time: 70 });
     }
     if (wizard.active) {
       wizard.time++;
@@ -204,17 +209,23 @@ export function createRunnerGame(
       }
     }
 
-    const obsHeight = Math.round(Math.min(canvas.height * .18, 110));
-    const gap = Math.max(55, 95 - speed * 3.5);
+    const obsHeight = isCompactScreen()
+      ? Math.round(Math.min(canvas.height * .11, 68))
+      : Math.round(Math.min(canvas.height * .18, 110));
+    const gap = isCompactScreen()
+      ? Math.max(105, 145 - speed * 3)
+      : Math.max(55, 95 - speed * 3.5);
     if (frame % Math.floor(gap) === 0) {
       const car = Math.random() < .55;
       const vehicleSprite = Math.random() < .5 ? carSprite : obstacleSprite;
-      const vehicleHeight = vehicleSprite === obstacleSprite ? Math.round(obsHeight * 1.3) : obsHeight;
+      const vehicleHeight = vehicleSprite === obstacleSprite
+        ? Math.round(obsHeight * (isCompactScreen() ? 1.15 : 1.3))
+        : obsHeight;
       const vehicleWidth = Math.round(
         vehicleHeight * (vehicleSprite.naturalWidth || 1) / Math.max(1, vehicleSprite.naturalHeight || 1),
       );
       obstacles.push({
-        x: canvas.width + 30,
+        x: canvas.width + (isCompactScreen() ? 90 : 30),
         y: ground() - (car ? vehicleHeight : 40),
         width: car ? vehicleWidth : 40,
         height: car ? vehicleHeight : 40,
@@ -225,21 +236,21 @@ export function createRunnerGame(
 
     if (frame % 130 === 0) {
       pickups.push({
-        x: canvas.width + 30,
+        x: canvas.width + (isCompactScreen() ? 90 : 30),
         y: ground() - player.height * (.9 + Math.random() * .7),
         type: 'score',
       });
     }
     if (frame >= 600 && frame % 900 === 0) {
       pickups.push({
-        x: canvas.width + 30,
+        x: canvas.width + (isCompactScreen() ? 90 : 30),
         y: ground() - player.height * 1.15,
         type: 'bigode',
       });
     }
     if (frame >= 900 && frame % 1200 === 0) {
       pickups.push({
-        x: canvas.width + 30,
+        x: canvas.width + (isCompactScreen() ? 90 : 30),
         y: ground() - player.height * 1.15,
         type: 'oleo',
       });
@@ -360,10 +371,14 @@ export function createRunnerGame(
     );
     const background = backgrounds[backgroundIndex];
     if (background.complete && background.naturalWidth > 0) {
-      const scale = Math.max(width / background.naturalWidth, height / background.naturalHeight);
+      const scale = isCompactScreen()
+        ? Math.max(width / background.naturalWidth, height / background.naturalHeight) * .68
+        : Math.max(width / background.naturalWidth, height / background.naturalHeight);
       const renderedWidth = background.naturalWidth * scale;
       const renderedHeight = background.naturalHeight * scale;
       const offset = -(frame * speed * .45 % renderedWidth);
+      context.fillStyle = '#10152b';
+      context.fillRect(0, 0, width, height);
       for (let x = offset - renderedWidth; x < width + renderedWidth; x += renderedWidth) {
         context.drawImage(background, x, height - renderedHeight, renderedWidth, renderedHeight);
       }
@@ -430,7 +445,7 @@ export function createRunnerGame(
     alienados.forEach((alienado) => {
       const image = alienado.type === 'alienado' ? alienadoFlaviete : alienadaFlaviete;
       if (!image.complete || image.naturalWidth === 0) return;
-      const alienadoHeight = Math.round(Math.min(canvas.height * .18, 110));
+      const alienadoHeight = Math.round(Math.min(canvas.height * (isCompactScreen() ? .11 : .18), isCompactScreen() ? 70 : 110));
       const alienadoWidth = alienadoHeight * image.naturalWidth / image.naturalHeight;
       context.globalAlpha = Math.min(1, alienado.time / 30);
       context.drawImage(
@@ -468,7 +483,7 @@ export function createRunnerGame(
     });
 
     if (pursuerX < width + player.width * 2 && heroSprite.complete) {
-      const pursuerHeight = Math.round(player.height * 1.35);
+      const pursuerHeight = Math.round(player.height * (isCompactScreen() ? 1.05 : 1.35));
       const pursuerWidth = pursuerHeight * heroSprite.naturalWidth / heroSprite.naturalHeight;
       context.drawImage(heroSprite, pursuerX - pursuerWidth, ground() - pursuerHeight + 4, pursuerWidth, pursuerHeight);
     }
