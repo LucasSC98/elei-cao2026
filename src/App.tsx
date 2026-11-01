@@ -87,6 +87,12 @@ export default function App() {
     [],
   );
 
+  const handleRunnerTouch = useCallback(() => {
+    if (game !== 'runner' || result || showingIntro) return;
+    keys.current.add('Space');
+    window.setTimeout(() => keys.current.delete('Space'), 90);
+  }, [game, result, showingIntro, keys]);
+
   const handleRunnerAlienadoQuote = useCallback((quote: string, x: number, y: number) => {
     setRunnerAlienadoQuote({ text: quote, x, y });
   }, []);
@@ -147,6 +153,15 @@ export default function App() {
       {/* Shell do Jogo que preenche 100% da tela no PC e celular */}
       <main className="game-shell">
         <canvas ref={canvasRef} className="game-canvas" />
+        {game === 'runner' && !result && !showingIntro && (
+          <button
+            className="runner-touch-zone"
+            aria-label="Pular"
+            onPointerDown={handleRunnerTouch}
+          >
+            <span>TOQUE PARA PULAR</span>
+          </button>
+        )}
 
         {(!game || result) && !showingIntro && playerName && (
           <Overlay>
