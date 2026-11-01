@@ -219,7 +219,18 @@ export function createFightGame(
       { left: 'KeyA', right: 'KeyD', jump: 'KeyW', attack: 'KeyF', special: 'KeyE', block: 'KeyS' }),
   ];
 
-  const ground = () => Math.max(70, canvas.height * .77);
+  const ground = () => {
+    if (campoMouraoBackground.complete && campoMouraoBackground.naturalWidth > 0) {
+      const scale = Math.max(
+        canvas.width / campoMouraoBackground.naturalWidth,
+        canvas.height / campoMouraoBackground.naturalHeight,
+      );
+      const renderedHeight = campoMouraoBackground.naturalHeight * scale;
+      const offsetY = (canvas.height - renderedHeight) / 2;
+      return offsetY + 825 * scale;
+    }
+    return Math.max(70, canvas.height * .77);
+  };
   const isGrounded = (f: Fighter) => f.y + f.height >= ground() - 1;
   const resize = () => {
     canvas.width = window.innerWidth;
