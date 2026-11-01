@@ -75,6 +75,18 @@ export default function App() {
     setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0);
   }, []);
 
+  useEffect(() => {
+    const preventBrowserZoom = (event: Event) => event.preventDefault();
+    document.addEventListener('gesturestart', preventBrowserZoom, { passive: false });
+    document.addEventListener('gesturechange', preventBrowserZoom, { passive: false });
+    document.addEventListener('gestureend', preventBrowserZoom, { passive: false });
+    return () => {
+      document.removeEventListener('gesturestart', preventBrowserZoom);
+      document.removeEventListener('gesturechange', preventBrowserZoom);
+      document.removeEventListener('gestureend', preventBrowserZoom);
+    };
+  }, []);
+
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
       document.documentElement.requestFullscreen().catch(() => {});
@@ -184,7 +196,7 @@ export default function App() {
       )}
 
       {/* Shell do Jogo que preenche 100% da tela no PC e celular */}
-      <main className="game-shell">
+      <main className={`game-shell ${game === 'luta' ? 'fight-mobile-active' : ''}`}>
         <canvas ref={canvasRef} className="game-canvas" />
         {game === 'luta' && !result && isTouchDevice && (
           <>
@@ -235,7 +247,7 @@ export default function App() {
         )}
       </main>
         
-      {playerName && <footer className="player-name-display">USUÁRIO: {playerName}</footer>}
+      {playerName && <footer className="player-name-display mobile-player-footer">USUÁRIO: {playerName}</footer>}
       <footer className="site-footer">Criado por LucasSC98</footer>
 
       {/* Os Alienados surgindo fora da tela do jogo */}

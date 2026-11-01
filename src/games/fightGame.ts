@@ -178,6 +178,7 @@ export function createFightGame(
   playerCharacter: FightCharacter,
 ): GameModule {
   const context = canvas.getContext('2d')!;
+  const touchDevice = window.matchMedia('(pointer: coarse)').matches;
   const flavieteSheet = loadImage(animacaoFlavieteUrl);
   const campoMouraoBackground = loadImage(campoMouraoBackgroundUrl);
   const luleteSheet = loadImage(luleteSheetUrl);
@@ -548,7 +549,7 @@ export function createFightGame(
   };
 
   const drawHealth = (fighter: Fighter, x: number, alignRight = false) => {
-    const barWidth = Math.min(canvas.width * .34, 390);
+    const barWidth = Math.min(canvas.width * (touchDevice ? .29 : .34), touchDevice ? 260 : 390);
     const barHeight = 24;
     const low = fighter.health <= 25;
     context.fillStyle = '#151827';
@@ -565,7 +566,7 @@ export function createFightGame(
     context.lineWidth = 2;
     context.strokeRect(x, 32, barWidth, barHeight);
     context.fillStyle = '#fff';
-    context.font = '14px "Press Start 2P", monospace';
+    context.font = `${touchDevice ? 9 : 14}px "Press Start 2P", monospace`;
     context.textAlign = alignRight ? 'right' : 'left';
     context.fillText(fighter.displayName, alignRight ? x + barWidth : x, 24);
     if (fighter.combo >= 2) {
@@ -609,6 +610,10 @@ export function createFightGame(
     } else {
       context.fillStyle = '#111936';
       context.fillRect(-20, -20, canvas.width + 40, canvas.height + 40);
+    }
+    if (touchDevice) {
+      context.fillStyle = 'rgba(5, 9, 24, .28)';
+      context.fillRect(0, 0, canvas.width, canvas.height);
     }
 
     context.strokeStyle = '#4ecdc4';
@@ -670,9 +675,11 @@ export function createFightGame(
     drawHealth(fighters[1], canvas.width - 24 - Math.min(canvas.width * .34, 390), true);
     
     context.fillStyle = '#fff';
-    context.font = '12px "Press Start 2P", monospace';
+    context.font = `${touchDevice ? 9 : 12}px "Press Start 2P", monospace`;
     context.textAlign = 'center';
-    context.fillText(`VOCÊ: ${playerCharacter === 'flaviete' ? 'FLAVIO BOLSONARO' : 'LULA'} · CPU`, canvas.width / 2, 48);
+    if (!touchDevice) {
+      context.fillText(`VOCÊ: ${playerCharacter === 'flaviete' ? 'FLAVIO BOLSONARO' : 'LULA'} · CPU`, canvas.width / 2, 48);
+    }
     const roundLabel = `ROUND ${roundNumber} · ${roundWins[0]} x ${roundWins[1]}`;
     context.font = '10px "Press Start 2P", monospace';
     const roundLabelWidth = context.measureText(roundLabel).width + 20;
@@ -684,12 +691,14 @@ export function createFightGame(
     context.fillStyle = '#ffd166';
     context.fillText(roundLabel, canvas.width / 2, 69);
 
-    const me = fighters[playerCharacter === 'flaviete' ? 0 : 1].controls;
-    const label = (k: string) => k.replace('Key', '').replace('Arrow', '');
-    context.font = '9px "Press Start 2P", monospace';
-    context.globalAlpha = .6;
-    context.fillText(`MOVER ${label(me.left)}/${label(me.right)} · PULAR ${label(me.jump)} · ATACAR ${label(me.attack)} · ESPECIAL ${label(me.special)} · DEFENDER ${label(me.block)}`, canvas.width / 2, canvas.height - 20);
-    context.globalAlpha = 1;
+    if (!touchDevice) {
+      const me = fighters[playerCharacter === 'flaviete' ? 0 : 1].controls;
+      const label = (k: string) => k.replace('Key', '').replace('Arrow', '');
+      context.font = '9px "Press Start 2P", monospace';
+      context.globalAlpha = .6;
+      context.fillText(`MOVER ${label(me.left)}/${label(me.right)} · PULAR ${label(me.jump)} · ATACAR ${label(me.attack)} · ESPECIAL ${label(me.special)} · DEFENDER ${label(me.block)}`, canvas.width / 2, canvas.height - 20);
+      context.globalAlpha = 1;
+    }
 
     if (frame < COUNTDOWN && running) {
       const step = Math.floor(frame / 40);

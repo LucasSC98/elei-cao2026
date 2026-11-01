@@ -25,6 +25,8 @@ html, body, #root {
   padding: 0;
   overflow: hidden;
   background: #0a0a12;
+  -webkit-text-size-adjust: 100%;
+  touch-action: none;
 }
 
 body {
@@ -219,25 +221,19 @@ button:active {
     font-size: 0.42rem;
   }
 
-  .player-name-display,
-  .site-footer {
-    right: 8px;
-    left: auto;
-    max-width: calc(100vw - 16px);
-    padding: 0;
-    background: transparent;
-    border: 0;
-    font-size: 0.48rem;
+  .fight-mobile-active ~ .mobile-player-footer,
+  .fight-mobile-active ~ .site-footer {
+    display: none;
   }
 
   .mobile-fight-controls {
     position: fixed;
-    inset: auto 0 max(10px, env(safe-area-inset-bottom)) 0;
+    inset: auto 0 max(8px, env(safe-area-inset-bottom)) 0;
     z-index: 80;
     display: flex;
     align-items: flex-end;
     justify-content: space-between;
-    padding: 0 max(12px, env(safe-area-inset-left)) 0 max(12px, env(safe-area-inset-right));
+    padding: 0 max(16px, env(safe-area-inset-left)) 0 max(16px, env(safe-area-inset-right));
     pointer-events: none;
   }
 
@@ -245,26 +241,26 @@ button:active {
   .mobile-fight-actions {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     pointer-events: auto;
   }
 
   .mobile-fight-actions {
     flex-wrap: wrap;
     justify-content: flex-end;
-    max-width: 48vw;
+    max-width: 52vw;
   }
 
   .mobile-fight-button {
-    width: 58px;
-    min-width: 58px;
-    height: 58px;
-    padding: 4px;
+    width: 62px;
+    min-width: 62px;
+    height: 62px;
+    padding: 3px;
     border: 2px solid rgba(255, 255, 255, 0.7);
     border-radius: 50%;
-    background: rgba(15, 20, 38, 0.84);
+    background: rgba(8, 12, 27, 0.94);
     color: #fff;
-    font-size: 0.48rem;
+    font-size: 0.44rem;
     line-height: 1.15;
     -webkit-tap-highlight-color: transparent;
     touch-action: none;
@@ -278,9 +274,9 @@ button:active {
 
   .mobile-fight-left,
   .mobile-fight-right {
-    width: 64px;
-    min-width: 64px;
-    height: 64px;
+    width: 68px;
+    min-width: 68px;
+    height: 68px;
     font-size: 1.15rem;
     border-color: #4ecdc4;
   }
@@ -333,16 +329,22 @@ button:active {
   }
 
   .mobile-fight-button {
-    width: 52px;
-    min-width: 52px;
-    height: 52px;
+    width: 58px;
+    min-width: 58px;
+    height: 58px;
   }
 
   .mobile-fight-left,
   .mobile-fight-right {
-    width: 58px;
-    min-width: 58px;
-    height: 58px;
+    width: 64px;
+    min-width: 64px;
+    height: 64px;
+  }
+}
+
+@media (pointer: coarse) and (max-width: 900px) and (orientation: portrait) {
+  .fight-mobile-active .mobile-fight-controls {
+    opacity: 0.35;
   }
 }
 
