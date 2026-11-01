@@ -71,6 +71,7 @@ const BLOCK_MULTIPLIER = 0.2;
 const COMBO_WINDOW = 45;
 const HITSTOP = 5;
 const COUNTDOWN = 120;
+const GROUND_RATIO = 0.79;
 
 // Os quadros não ocupam células uniformes; os limites acompanham o conteúdo de cada pose.
 type SpriteFrame = { x: number; y: number; w: number; h: number };
@@ -231,18 +232,26 @@ export function createFightGame(
         offsetY: (canvas.height - campoMouraoBackground.naturalHeight * scale) / 2,
       };
     }
-    return { scale: canvas.height / 1115, offsetX: 0, offsetY: 0 };
+    // Sem a imagem carregada, usa o tamanho real do fundo (1920x1072) para não errar o chão.
+    const scale = Math.max(canvas.width / 1920, canvas.height / 1072);
+    return { scale, offsetX: (canvas.width - 1920 * scale) / 2, offsetY: (canvas.height - 1072 * scale) / 2 };
   };
 
   const ground = () => {
     const { scale, offsetY } = backgroundLayout();
     // The playable plane follows the middle of the broad sidewalk in the source image.
-    return offsetY + 808 * scale;
+    // Chão = calçada da frente (≈79% da altura da imagem), proporcional ao tamanho real do fundo.
+    const imgH = campoMouraoBackground.naturalHeight || 1072;
+    const y = offsetY + imgH * GROUND_RATIO * scale;
+    // Nunca deixa o chão sair da tela (telas muito altas/estreitas no celular).
+    return Math.min(y, canvas.height - 12);
   };
   const isGrounded = (f: Fighter) => f.y + f.height >= ground() - 1;
   const resize = () => {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    // Usa o tamanho REAL em que o canvas aparece (Safari/Chrome mobile mudam a barra de endereço).
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = Math.round(rect.width || window.innerWidth);
+    canvas.height = Math.round(rect.height || window.innerHeight);
     const height = Math.min(canvas.height * .36, 270);
     fighters.forEach((fighter, index) => {
       fighter.height = height;
@@ -810,7 +819,10 @@ export function createFightGame(
 
   resize();
   campoMouraoBackground.addEventListener('load', resize);
+  if (campoMouraoBackground.decode) campoMouraoBackground.decode().then(resize).catch(() => {});
   window.addEventListener('resize', resize);
+  window.addEventListener('orientationchange', () => setTimeout(resize, 250));
+  window.visualViewport?.addEventListener('resize', resize);
   return {
     start,
     stop: () => { running = false; cancelAnimationFrame(animation); },
@@ -818,6 +830,7 @@ export function createFightGame(
       running = false;
       cancelAnimationFrame(animation);
       window.removeEventListener('resize', resize);
+      window.visualViewport?.removeEventListener('resize', resize);
     },
   };
 }
