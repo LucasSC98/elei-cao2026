@@ -321,6 +321,7 @@ export function createFightGame(
   };
 
   const finish = (loser: Fighter) => {
+    if (winner || loser.health > 0) return;
     winner = fighters.find((fighter) => fighter !== loser) ?? fighters[0];
     const winnerIndex = fighters.indexOf(winner);
     roundWins[winnerIndex]++;
@@ -760,11 +761,12 @@ export function createFightGame(
         }
         const target = p.ownerName === 'FLAVIETE' ? fighters[1] : fighters[0];
         const tBox = body(target);
-        if (p.x < tBox.x + tBox.width && p.x + p.width > tBox.x && p.y < tBox.y + tBox.height && p.y + p.height > tBox.y) {
+        if (target.health > 0 && p.x < tBox.x + tBox.width && p.x + p.width > tBox.x && p.y < tBox.y + tBox.height && p.y + p.height > tBox.y) {
           target.health = Math.max(0, target.health - 12);
           target.hitTimer = 12;
           burst(p.x, p.y, p.type === 'laranja' ? '#f97316' : '#9fd8ff', 15, 6);
           p.life = 0;
+          if (target.health === 0) finish(target);
         }
       });
       projectiles = projectiles.filter((p) => p.life > 0);
