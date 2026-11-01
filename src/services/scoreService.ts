@@ -55,7 +55,11 @@ export async function saveScore(
     throw new Error('Informe um nome para salvar a pontuação.');
   }
 
-  const gameName = game === 'runner' ? 'A Grande Fuga' : 'Roubando o Brasil';
+  const gameName = game === 'runner'
+    ? 'A Grande Fuga'
+    : game === 'larapio'
+      ? 'Roubando o Brasil'
+      : 'Batalha Eleitoral';
   const { data, error: selectError } = await getClient()
     .from('pontuacoes')
     .select('melhor_pontuacao')

@@ -200,12 +200,158 @@ button:active {
   text-shadow: 0 1px 3px #000;
 }
 
+.mobile-fight-controls,
+.mobile-landscape-hint {
+  display: none;
+}
+
+@media (pointer: coarse) and (max-width: 900px) {
+  .fullscreen-toggle-btn {
+    top: 8px;
+    right: 8px;
+    padding: 6px 8px;
+    font-size: 0.42rem;
+  }
+
+  .back-to-menu-btn {
+    top: 8px;
+    padding: 6px 8px;
+    font-size: 0.42rem;
+  }
+
+  .player-name-display,
+  .site-footer {
+    right: 8px;
+    left: auto;
+    max-width: calc(100vw - 16px);
+    padding: 0;
+    background: transparent;
+    border: 0;
+    font-size: 0.48rem;
+  }
+
+  .mobile-fight-controls {
+    position: fixed;
+    inset: auto 0 max(10px, env(safe-area-inset-bottom)) 0;
+    z-index: 80;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding: 0 max(12px, env(safe-area-inset-left)) 0 max(12px, env(safe-area-inset-right));
+    pointer-events: none;
+  }
+
+  .mobile-fight-movement,
+  .mobile-fight-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    pointer-events: auto;
+  }
+
+  .mobile-fight-actions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    max-width: 48vw;
+  }
+
+  .mobile-fight-button {
+    width: 58px;
+    min-width: 58px;
+    height: 58px;
+    padding: 4px;
+    border: 2px solid rgba(255, 255, 255, 0.7);
+    border-radius: 50%;
+    background: rgba(15, 20, 38, 0.84);
+    color: #fff;
+    font-size: 0.48rem;
+    line-height: 1.15;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: none;
+  }
+
+  .mobile-fight-button:active {
+    transform: scale(0.92);
+    background: #4ecdc4;
+    color: #0a0a12;
+  }
+
+  .mobile-fight-left,
+  .mobile-fight-right {
+    width: 64px;
+    min-width: 64px;
+    height: 64px;
+    font-size: 1.15rem;
+    border-color: #4ecdc4;
+  }
+
+  .mobile-fight-attack {
+    border-color: #ff6b6b;
+  }
+
+  .mobile-fight-special {
+    border-color: #ffd166;
+  }
+
+  .mobile-fight-block {
+    border-color: #9fd8ff;
+  }
+
+  .mobile-landscape-hint {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    z-index: 75;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: min(90vw, 360px);
+    padding: 18px;
+    border: 2px solid #ffd166;
+    border-radius: 12px;
+    background: rgba(10, 15, 26, 0.92);
+    color: #fff;
+    text-align: center;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+
+  .mobile-landscape-hint strong {
+    color: #ffd166;
+    font-size: 0.7rem;
+  }
+
+  .mobile-landscape-hint span {
+    color: #cbd5e1;
+    font: 0.62rem/1.6 'Segoe UI', sans-serif;
+  }
+}
+
+@media (pointer: coarse) and (max-width: 900px) and (orientation: landscape) {
+  .mobile-landscape-hint {
+    display: none;
+  }
+
+  .mobile-fight-button {
+    width: 52px;
+    min-width: 52px;
+    height: 52px;
+  }
+
+  .mobile-fight-left,
+  .mobile-fight-right {
+    width: 58px;
+    min-width: 58px;
+    height: 58px;
+  }
+}
+
 .player-name-display {
   position: fixed;
-  top: 14px;
-  left: 700px;
+  right: 12px;
+  bottom: 28px;
   z-index: 70;
-  max-width: calc(100vw - 180px);
+  max-width: calc(100vw - 24px);
   overflow: hidden;
   padding: 8px 12px;
   border: 2px solid #ffd166;

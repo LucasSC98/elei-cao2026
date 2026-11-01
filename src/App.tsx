@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, type MutableRefObject, type PointerEvent } from 'react';
 import { GameMenu } from './components/GameMenu';
 import { GameOver } from './components/GameOver';
 import { Overlay } from './components/Overlay';
@@ -8,9 +8,50 @@ import { IntroVideo } from './components/IntroVideo';
 import flavieteIntroUrl from './assets/flaviete-intro.mp4';
 import { createLarapioGame } from './games/larapioGame';
 import { createRunnerGame } from './games/runnerGame';
+import { createFightGame } from './games/fightGame';
 import { useKeyboard } from './hooks/useKeyboard';
 import { saveScore } from './services/scoreService';
-import type { GameId, GameModule, GameResult } from './types';
+import type { FightCharacter, GameId, GameModule, GameResult } from './types';
+
+function MobileFightControls({ keys }: { keys: MutableRefObject<Set<string>> }) {
+  const press = (code: string) => (event: PointerEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    event.currentTarget.setPointerCapture(event.pointerId);
+    keys.current.add(code);
+  };
+  const release = (code: string) => (event: PointerEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    keys.current.delete(code);
+  };
+
+  const actionButton = (label: string, code: string, className: string) => (
+    <button
+      className={`mobile-fight-button ${className}`}
+      onPointerDown={press(code)}
+      onPointerUp={release(code)}
+      onPointerCancel={release(code)}
+      onLostPointerCapture={release(code)}
+      aria-label={label}
+    >
+      {label}
+    </button>
+  );
+
+  return (
+    <div className="mobile-fight-controls" aria-label="Controles para celular">
+      <div className="mobile-fight-movement">
+        {actionButton('◀', 'KeyA', 'mobile-fight-left')}
+        {actionButton('▶', 'KeyD', 'mobile-fight-right')}
+      </div>
+      <div className="mobile-fight-actions">
+        {actionButton('DEF', 'KeyS', 'mobile-fight-block')}
+        {actionButton('PULO', 'KeyW', 'mobile-fight-jump')}
+        {actionButton('SOCO', 'KeyF', 'mobile-fight-attack')}
+        {actionButton('PODER', 'KeyE', 'mobile-fight-special')}
+      </div>
+    </div>
+  );
+}
 
 export default function App() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -22,11 +63,17 @@ export default function App() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [playerName, setPlayerName] = useState('');
   const [nameInput, setNameInput] = useState('');
+  const [fightCharacter, setFightCharacter] = useState<FightCharacter>('flaviete');
   const [runnerAlienadoQuote, setRunnerAlienadoQuote] = useState<{
     text: string;
     x: number;
     y: number;
   } | null>(null);
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
+
+  useEffect(() => {
+    setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0);
+  }, []);
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
@@ -60,6 +107,11 @@ export default function App() {
 
   const handleSelectGame = (selectedGame: GameId) => {
     setShowingIntro(selectedGame);
+  };
+
+  const handleSelectFightCharacter = (character: FightCharacter) => {
+    setFightCharacter(character);
+    setShowingIntro('luta');
   };
 
   const finishIntro = () => {
@@ -104,13 +156,15 @@ export default function App() {
     };
     gameRef.current = game === 'runner'
       ? createRunnerGame(canvasRef.current, keys.current, onEnd, handleRunnerAlienadoQuote)
-      : createLarapioGame(canvasRef.current, keys.current, onEnd);
+      : game === 'larapio'
+        ? createLarapioGame(canvasRef.current, keys.current, onEnd)
+        : createFightGame(canvasRef.current, keys.current, onEnd, fightCharacter);
     gameRef.current.start();
     return () => {
       gameRef.current?.destroy();
       gameRef.current = null;
     };
-  }, [game, keys, handleRunnerAlienadoQuote]);
+  }, [game, keys, fightCharacter, handleRunnerAlienadoQuote]);
 
   return (
     <>
@@ -120,21 +174,6 @@ export default function App() {
           onFinish={finishIntro}
           videoSrc={showingIntro === 'runner' ? flavieteIntroUrl : undefined}
         />
-      )}
-
-      {/* Botão de Alternar Tela Cheia (F11 / Nativa) */}
-      {!showingIntro && (
-        <button
-          className="fullscreen-toggle-btn"
-          onClick={toggleFullscreen}
-          title="Alternar Tela Cheia (F11)"
-        >
-          {isFullscreen ? '🗗 SAIR' : '⛶ TELA CHEIA'}
-        </button>
-      )}
-
-      {playerName && !showingIntro && (
-        <div className="player-name-display">USUÁRIO: {playerName}</div>
       )}
 
       {/* Botão para voltar ao Menu durante a jogatina */}
@@ -147,6 +186,15 @@ export default function App() {
       {/* Shell do Jogo que preenche 100% da tela no PC e celular */}
       <main className="game-shell">
         <canvas ref={canvasRef} className="game-canvas" />
+        {game === 'luta' && !result && isTouchDevice && (
+          <>
+            <div className="mobile-landscape-hint">
+              <strong>GIRE O CELULAR</strong>
+              <span>Jogue com a tela deitada</span>
+            </div>
+            <MobileFightControls keys={keys} />
+          </>
+        )}
 
         {(!game || result) && !showingIntro && playerName && (
           <Overlay>
@@ -157,7 +205,10 @@ export default function App() {
                 onMenu={openMenu}
               />
             ) : (
-              <GameMenu onSelect={handleSelectGame} />
+              <GameMenu
+                onSelect={handleSelectGame}
+                onSelectFightCharacter={handleSelectFightCharacter}
+              />
             )}
           </Overlay>
         )}
@@ -183,7 +234,8 @@ export default function App() {
           </Overlay>
         )}
       </main>
-
+        
+      {playerName && <footer className="player-name-display">USUÁRIO: {playerName}</footer>}
       <footer className="site-footer">Criado por LucasSC98</footer>
 
       {/* Os Alienados surgindo fora da tela do jogo */}

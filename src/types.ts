@@ -1,4 +1,5 @@
-export type GameId = 'runner' | 'larapio';
+export type GameId = 'runner' | 'larapio' | 'luta';
+export type FightCharacter = 'flaviete' | 'lulete';
 
 export type GameResult = {
   title: string;
