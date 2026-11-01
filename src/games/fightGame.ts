@@ -219,7 +219,7 @@ export function createFightGame(
       { left: 'KeyA', right: 'KeyD', jump: 'KeyW', attack: 'KeyF', special: 'KeyE', block: 'KeyS' }),
   ];
 
-  const ground = () => canvas.height - Math.max(70, canvas.height * .16);
+  const ground = () => Math.max(70, canvas.height * .77);
   const isGrounded = (f: Fighter) => f.y + f.height >= ground() - 1;
   const resize = () => {
     canvas.width = window.innerWidth;
