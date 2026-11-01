@@ -219,17 +219,25 @@ export function createFightGame(
       { left: 'KeyA', right: 'KeyD', jump: 'KeyW', attack: 'KeyF', special: 'KeyE', block: 'KeyS' }),
   ];
 
-  const ground = () => {
+  const backgroundLayout = () => {
     if (campoMouraoBackground.complete && campoMouraoBackground.naturalWidth > 0) {
       const scale = Math.max(
         canvas.width / campoMouraoBackground.naturalWidth,
         canvas.height / campoMouraoBackground.naturalHeight,
       );
-      const renderedHeight = campoMouraoBackground.naturalHeight * scale;
-      const offsetY = (canvas.height - renderedHeight) / 2;
-      return offsetY + 825 * scale;
+      return {
+        scale,
+        offsetX: (canvas.width - campoMouraoBackground.naturalWidth * scale) / 2,
+        offsetY: (canvas.height - campoMouraoBackground.naturalHeight * scale) / 2,
+      };
     }
-    return Math.max(70, canvas.height * .77);
+    return { scale: canvas.height / 1115, offsetX: 0, offsetY: 0 };
+  };
+
+  const ground = () => {
+    const { scale, offsetY } = backgroundLayout();
+    // The playable plane follows the middle of the broad sidewalk in the source image.
+    return offsetY + 808 * scale;
   };
   const isGrounded = (f: Fighter) => f.y + f.height >= ground() - 1;
   const resize = () => {
@@ -605,16 +613,13 @@ export function createFightGame(
     context.save();
     if (shake > 0) context.translate((Math.random() - .5) * shake, (Math.random() - .5) * shake);
     if (campoMouraoBackground.complete && campoMouraoBackground.naturalWidth > 0) {
-      const scale = Math.max(
-        canvas.width / campoMouraoBackground.naturalWidth,
-        canvas.height / campoMouraoBackground.naturalHeight,
-      );
+      const { scale, offsetX, offsetY } = backgroundLayout();
       const backgroundWidth = campoMouraoBackground.naturalWidth * scale;
       const backgroundHeight = campoMouraoBackground.naturalHeight * scale;
       context.drawImage(
         campoMouraoBackground,
-        (canvas.width - backgroundWidth) / 2,
-        (canvas.height - backgroundHeight) / 2,
+        offsetX,
+        offsetY,
         backgroundWidth,
         backgroundHeight,
       );
@@ -626,16 +631,6 @@ export function createFightGame(
       context.fillStyle = 'rgba(5, 9, 24, .28)';
       context.fillRect(0, 0, canvas.width, canvas.height);
     }
-
-    context.strokeStyle = '#4ecdc4';
-    context.shadowColor = '#4ecdc4';
-    context.shadowBlur = 12;
-    context.lineWidth = 3;
-    context.beginPath();
-    context.moveTo(0, ground());
-    context.lineTo(canvas.width, ground());
-    context.stroke();
-    context.shadowBlur = 0;
 
     fighters.forEach(drawShadow);
     fighters.forEach(drawFighter);
@@ -814,6 +809,7 @@ export function createFightGame(
   };
 
   resize();
+  campoMouraoBackground.addEventListener('load', resize);
   window.addEventListener('resize', resize);
   return {
     start,
